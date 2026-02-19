@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package auth.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.turtlemint.grpc.auth.service";
+option java_outer_classname = "AuthPermissionsProto";
+
+// =====================
+// Service definition
+// =====================
+service AuthService {
+  rpc GetUserPermissions (PermissionRequest) returns (PermissionResponse);
+}
+
+// =====================
+// Request
+// =====================
+message PermissionRequest {
+  int32 timelimit = 1;
+}
+
+// =====================
+// Response wrapper
+// =====================
+message PermissionResponse {
+  PermissionData data = 1;
+  ResponseMeta meta = 2;
+}
+
+// =====================
+// Core data
+// =====================
+message PermissionData {
+  string id = 1;
+  string userId = 2;
+  string client = 3;
+  string tenant = 4;
+  string createdAt = 5;   // ISO-8601
+  string updatedAt = 6;
+
+  repeated Role roles = 7;
+  repeated string permissions = 8;
+}
+
+// =====================
+// Role
+// =====================
+message Role {
+  string id = 1;
+  string key = 2;
+  string name = 3;
+  string tenant = 4;
+  bool active = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+}
+
+// =====================
+// Meta (business-level response info)
+// =====================
+message ResponseMeta {
+  bool error = 1;
+  string msg = 2;
+  int32 statusCode = 3;
+}
