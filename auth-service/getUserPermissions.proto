@@ -10,20 +10,20 @@ option java_outer_classname = "AuthPermissionsProto";
 // Service definition
 // =====================
 service AuthService {
-  rpc GetUserPermissions (PermissionRequest) returns (PermissionResponse);
+  rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
 }
 
 // =====================
 // Request
 // =====================
-message PermissionRequest {
+message GetUserPermissionsRequest {
   int32 timelimit = 1;
 }
 
 // =====================
 // Response wrapper
 // =====================
-message PermissionResponse {
+message GetUserPermissionsResponse {
   PermissionData data = 1;
   ResponseMeta meta = 2;
 }
