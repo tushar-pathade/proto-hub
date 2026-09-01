@@ -11,6 +11,7 @@ option java_outer_classname = "AuthPermissionsProto";
 // =====================
 service AuthService {
   rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
+  rpc GetRolesForUser (GetRolesForUserRequest) returns (GetRolesForUserResponse);
 }
 
 // =====================
@@ -63,4 +64,16 @@ message ResponseMeta {
   bool error = 1;
   string msg = 2;
   int32 status_code = 3;
+}
+
+// =====================
+// GetRolesForUser
+// =====================
+message GetRolesForUserRequest {
+  string user_id = 1;
+}
+
+message GetRolesForUserResponse {
+  repeated string roles = 1;
+  ResponseMeta meta = 2;
 }
