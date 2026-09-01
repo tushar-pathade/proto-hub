@@ -1,0 +1,64 @@
+name: Proto Auto-Tag
+
+# Auto-tags each top-level proto directory touched by a push to main, one minor version
+# up from its last tag. Safe by construction: proto-ci.yml's buf-breaking-action already
+# blocks actual breaking changes at PR time, so anything landing on main is presumed a
+# non-breaking, additive release for that directory. A true breaking change is made by
+# adding a new v<N+1>/ directory (a new major version), which this workflow tags starting
+# at v<N+1>.0.0 -- major-version bumps are a deliberate structural act, not something this
+# workflow decides on its own.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag changed proto directories
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+
+          before="${{ github.event.before }}"
+          after="${{ github.sha }}"
+
+          # Skip the tagging job's own commits (created by this job itself, or the initial
+          # push of a new branch where "before" is all-zeros).
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            echo "No previous commit to diff against, skipping."
+            exit 0
+          fi
+
+          changed_files=$(git diff --name-only "$before" "$after" -- '*.proto')
+          if [ -z "$changed_files" ]; then
+            echo "No .proto changes in this push, nothing to tag."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Every changed <dir>/v<N>/ pair, deduplicated.
+          echo "$changed_files" | awk -F/ '{print $1"/"$2}' | sort -u | while read -r dirmajor; do
+            dir="${dirmajor%%/*}"
+            major="${dirmajor##*/}"
+            [ -d "$dirmajor" ] || continue
+
+            prefix="${dir}/${major}."
+            latest_minor=$(git tag -l "${prefix}*" | sed "s#^${prefix}##" | cut -d. -f1 | sort -n | tail -1)
+            next_minor=$(( ${latest_minor:--1} + 1 ))
+            new_tag="${dir}/${major}.${next_minor}.0"
+
+            echo "Tagging ${new_tag}"
+            git tag "$new_tag" "$after"
+            git push origin "$new_tag"
+          done

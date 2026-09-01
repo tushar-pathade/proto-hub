@@ -33,11 +33,11 @@ message GetUserPermissionsResponse {
 // =====================
 message PermissionData {
   string id = 1;
-  string userId = 2;
+  string user_id = 2;
   string client = 3;
   string tenant = 4;
-  string createdAt = 5;   // ISO-8601
-  string updatedAt = 6;
+  string created_at = 5;   // ISO-8601
+  string updated_at = 6;
 
   repeated Role roles = 7;
   repeated string permissions = 8;
@@ -52,8 +52,8 @@ message Role {
   string name = 3;
   string tenant = 4;
   bool active = 5;
-  string createdAt = 6;
-  string updatedAt = 7;
+  string created_at = 6;
+  string updated_at = 7;
 }
 
 // =====================
@@ -62,5 +62,5 @@ message Role {
 message ResponseMeta {
   bool error = 1;
   string msg = 2;
-  int32 statusCode = 3;
+  int32 status_code = 3;
 }
