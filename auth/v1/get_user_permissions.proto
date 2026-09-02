@@ -10,51 +10,7 @@ option java_outer_classname = "AuthPermissionsProto";
 // Service definition
 // =====================
 service AuthService {
-  rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
   rpc GetRolesForUser (GetRolesForUserRequest) returns (GetRolesForUserResponse);
-}
-
-// =====================
-// Request
-// =====================
-message GetUserPermissionsRequest {
-  int32 timelimit = 1;
-}
-
-// =====================
-// Response wrapper
-// =====================
-message GetUserPermissionsResponse {
-  PermissionData data = 1;
-  ResponseMeta meta = 2;
-}
-
-// =====================
-// Core data
-// =====================
-message PermissionData {
-  string id = 1;
-  string user_id = 2;
-  string client = 3;
-  string tenant = 4;
-  string created_at = 5;   // ISO-8601
-  string updated_at = 6;
-
-  repeated Role roles = 7;
-  repeated string permissions = 8;
-}
-
-// =====================
-// Role
-// =====================
-message Role {
-  string id = 1;
-  string key = 2;
-  string name = 3;
-  string tenant = 4;
-  bool active = 5;
-  string created_at = 6;
-  string updated_at = 7;
 }
 
 // =====================
