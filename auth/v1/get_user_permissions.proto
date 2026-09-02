@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package auth.v1;
 
+import "google/protobuf/wrappers.proto";
+
 option java_multiple_files = true;
 option java_package = "com.turtlemint.grpc.auth.v1";
 option java_outer_classname = "AuthPermissionsProto";
@@ -11,6 +13,7 @@ option java_outer_classname = "AuthPermissionsProto";
 // =====================
 service AuthService {
   rpc GetRolesForUser (GetRolesForUserRequest) returns (GetRolesForUserResponse);
+  rpc GetPermissionsForToken (GetPermissionsForTokenRequest) returns (GetPermissionsForTokenResponse);
 }
 
 // =====================
@@ -32,4 +35,39 @@ message GetRolesForUserRequest {
 message GetRolesForUserResponse {
   repeated string roles = 1;
   ResponseMeta meta = 2;
+}
+
+// =====================
+// GetPermissionsForToken
+// =====================
+// Mirrors REST GET /v1/user/permissions. The caller's api token travels as call
+// metadata (x-api-token), not as a field on this message -- matching the REST
+// endpoint, which reads it from the request context rather than a query param.
+message GetPermissionsForTokenRequest {
+  // Optional. Maximum permitted token age in seconds; when set, the server
+  // rejects a token older than this. Wrapper type because "unset" (skip the
+  // check) is a distinct state from 0 (permit only zero age).
+  google.protobuf.Int64Value timelimit = 1;
+}
+
+message GetPermissionsForTokenResponse {
+  string id = 1;
+  string user_id = 2;
+  string client = 3;
+  string tenant = 4;
+  string created_at = 5;  // ISO-8601
+  string updated_at = 6;  // ISO-8601
+  repeated Role roles = 7;
+  repeated string permissions = 8;
+  ResponseMeta meta = 9;
+}
+
+message Role {
+  string id = 1;
+  string key = 2;
+  string name = 3;
+  string tenant = 4;
+  bool active = 5;
+  string created_at = 6;  // ISO-8601
+  string updated_at = 7;  // ISO-8601
 }
