@@ -16,6 +16,8 @@ jobs:
       - uses: bufbuild/buf-setup-action@v1
 
       - uses: bufbuild/buf-lint-action@v1
+        with:
+          github_token: ${{ github.token }}
 
       # Only meaningful on a PR, where there's a base branch to diff against.
       # Compares the incoming change to main, not to any already-cut release tag
@@ -25,3 +27,4 @@ jobs:
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }}"
+          github_token: ${{ github.token }}
