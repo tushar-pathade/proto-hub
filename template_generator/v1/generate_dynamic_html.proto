@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package template_generator.v1;
+
+import "google/protobuf/struct.proto";
+
+option java_multiple_files = true;
+option java_package = "com.turtlemint.grpc.templategenerator.v1";
+option java_outer_classname = "TemplateGeneratorProto";
+
+// =====================
+// Service definition
+// =====================
+service TemplateGeneratorService {
+  rpc GenerateDynamicHtmlV1 (GenerateDynamicHtmlV1Request) returns (GenerateDynamicHtmlV1Response);
+}
+
+// =====================
+// Meta (business-level response info)
+// =====================
+// Mirrors the ResponseMeta convention established in auth/v1. Carried alongside
+// the payload so the server can signal a business-level outcome (e.g. a localized
+// template was requested but the service fell back to the English base template)
+// without failing the RPC.
+message ResponseMeta {
+  bool error = 1;
+  string msg = 2;
+  int32 status_code = 3;
+}
+
+// =====================
+// GenerateDynamicHtmlV1
+// =====================
+// Mirrors REST POST /v1/generate/dynamic-html
+// (controllers/HTMLGeneratorController.js#generateHTMLV1). The server compiles a
+// named Handlebars template of the given type, in the requested language, against
+// the caller-supplied data, and returns the rendered HTML.
+message GenerateDynamicHtmlV1Request {
+  // Required. Template name; the server resolves it to
+  // ./tpl/<template_type>/<template>.tpl.html.
+  string template = 1;
+
+  // Optional. Template family / output type (e.g. "pdf"). Case-insensitive; the
+  // server lowercases it. Empty selects the server default ("pdf") -- empty
+  // string is never a meaningful value here, so a bare scalar is sufficient.
+  string template_type = 2;
+
+  // Optional. Language tag (e.g. "hi-in"). Empty or "en-in" selects the base
+  // template; any other value selects a localized template, with automatic
+  // fallback to the base template when the localized file is absent. Empty is
+  // never a meaningful distinct value, so a bare scalar is sufficient.
+  string language = 3;
+
+  // Optional. Free-form, caller-defined template context (the Handlebars data
+  // object). The server interprets no field of it -- it is handed straight to
+  // the template engine. Struct (not a JSON string) keeps the payload
+  // inspectable in gRPC tooling; note Struct coerces every JSON number to
+  // double, which is harmless here because the templates' numeric helpers
+  // re-parse values anyway.
+  google.protobuf.Struct data = 4;
+
+  // Optional. Handlebars compile options (e.g. noEscape, strict). Server
+  // defaults to an empty object. Same Struct rationale as `data`.
+  google.protobuf.Struct template_options = 5;
+}
+
+message GenerateDynamicHtmlV1Response {
+  // The rendered HTML document.
+  string html = 1;
+
+  ResponseMeta meta = 2;
+}
