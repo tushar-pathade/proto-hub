@@ -9,22 +9,28 @@ jobs:
   buf:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
+      # github_token here is a real input (raises buf's own GitHub API rate limit
+      # while resolving the CLI release) -- unlike the two steps below, which don't
+      # accept it.
       - uses: bufbuild/buf-setup-action@v1
-
-      - uses: bufbuild/buf-lint-action@v1
         with:
           github_token: ${{ github.token }}
+
+      - uses: bufbuild/buf-lint-action@v1
 
       # Only meaningful on a PR, where there's a base branch to diff against.
       # Compares the incoming change to main, not to any already-cut release tag
       # (those are immutable once a consumer has pinned them; see grpc-deps.yaml
       # in producer/consumer repos).
+      #
+      # against fetches over the git protocol, not the GitHub API, so github_token
+      # isn't accepted here either -- buf_input_https_password already defaults to
+      # ${{ github.token }}, which authenticates that git fetch.
       - if: github.event_name == 'pull_request'
         uses: bufbuild/buf-breaking-action@v1
         with:
           against: "https://github.com/${{ github.repository }}.git#branch=${{ github.event.pull_request.base.ref }}"
-          github_token: ${{ github.token }}
